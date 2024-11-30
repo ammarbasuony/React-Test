@@ -17,16 +17,15 @@ const index = async (req, res) => {
   const query = req.query;
   query.deleted = false;
 
-  let allData = await MeetingHistory.find(query)
-    .populate({
-      path: "createBy",
-      match: { deleted: false }, // Populate only if createBy.deleted is false
-    })
-    .exec();
-
-  const result = allData.filter((item) => item.createBy !== null);
-
   try {
+    let allData = await MeetingHistory.find(query)
+      .populate({
+        path: "createBy",
+      })
+      .exec();
+
+    const result = allData.filter((item) => item.createBy !== null);
+
     res.send(result);
   } catch (error) {
     res.send(error);
@@ -35,13 +34,17 @@ const index = async (req, res) => {
 
 const view = async (req, res) => {
   try {
-    let meeting = await MeetingHistory.findOne({ _id: req.params.id }).populate({
+    const meeting = await MeetingHistory.findOne({
+      _id: req.params.id,
+    }).populate({
       path: "createBy",
     });
 
     if (!meeting) {
       return res.status(404).json({ error: "Meeting not found" });
     }
+
+    res.status(200).json(meeting);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error, err: "An error occurred." });
